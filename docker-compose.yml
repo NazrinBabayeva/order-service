@@ -1,0 +1,99 @@
+version: "3.9"
+services:
+
+  # ---------------- PostgreSQL ----------------
+  postgres-db:
+    image: postgres:15
+    container_name: order-postgres
+    environment:
+      POSTGRES_DB: order_db
+      POSTGRES_USER: orderms_db
+      POSTGRES_PASSWORD: 123456
+    ports:
+      - "5433:5432"
+    networks:
+      - order-net
+
+  # ---------------- Redis ----------------
+  redis:
+    image: redis:7
+    container_name: order-redis
+    ports:
+      - "6380:6379"
+    networks:
+      - order-net
+
+  # ---------------- Zookeeper ----------------
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: order-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - "2182:2181"
+    networks:
+      - order-net
+
+  # ---------------- Kafka ----------------
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: order-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9093:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - order-net
+
+  # ---------------- Kafdrop ----------------
+  kafdrop:
+    image: obsidiandynamics/kafdrop:latest
+    container_name: order-kafdrop
+    depends_on:
+      - kafka
+    ports:
+      - "9001:9000"
+    environment:
+      KAFKA_BROKERCONNECT: kafka:9092
+      JVM_OPTS: "-Xms32M -Xmx64M"
+    networks:
+      - order-net
+
+  # ---------------- Order Service ----------------
+  order-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: order-service
+    depends_on:
+      - postgres-db
+      - redis
+      - kafka
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_APPLICATION_NAME: e-commerce_orderservice
+
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-db:5432/order_db
+      SPRING_DATASOURCE_USERNAME: orderms_db
+      SPRING_DATASOURCE_PASSWORD: 123456
+
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    networks:
+      - order-net
+
+# ---------------- Network ----------------
+networks:
+  order-net:
+    driver: bridge
