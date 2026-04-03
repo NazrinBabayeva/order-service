@@ -11,5 +11,6 @@ public class ProductResponseDto {
     private Long count;
     private Boolean active;
     private BigDecimal price;
+    private String email;
 
 }

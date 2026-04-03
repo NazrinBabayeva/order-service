@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: e-commerce_orderservice
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: 123456
+    hikari:
+      schema: order_schema
+  profiles:
+    active:
+      - kafka
+
+  redis: localhost
+
+  sleuth:
+    sampler:
+      probability: 1.0
+
+  zipkin:
+    base-url: http://localhost:9411/api/v2/spans
+    sender:
+      type: web
+    enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  data:
+    redis:
+      post: 6379
+
+server:
+  port: 8081
+  servlet:
+    context-path: /order-service

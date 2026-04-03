@@ -1,0 +1,34 @@
+spring:
+  kafka:
+    template:
+      order-create-event-topic: ${ORDER_CREATE_ORDER_TOPIC:order-create-event-topic}
+    consumer:
+      bootstrap-servers: localhost:9092
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.ByteArrayDeserializer
+      properties:
+        max.partition.fetch.bytes: 2000000
+        spring:
+          json:
+            add:
+              type:
+                headers: false
+
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      properties:
+        acks: all
+        retries: 10
+        retry.backoff.ms: 1000
+        max.block.ms: 20000
+        linger.ms: 500
+        delivery.timeout.ms: 35000
+        max.request.size: 22020096
+        spring:
+          json:
+            add:
+              type:
+                headers: false

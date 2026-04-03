@@ -17,4 +17,5 @@ public class OrderCreatedEvent {
     private Long productId;
     private Long quantity;
     private BigDecimal price;
+    private String email;
 }

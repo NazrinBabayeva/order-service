@@ -25,6 +25,7 @@ public class Order {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
     private LocalDateTime createdAt;
+    private String email;
 
 
 }
